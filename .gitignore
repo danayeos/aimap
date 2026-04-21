@@ -1,0 +1,5 @@
+.env
+__pycache__/
+*.pyc
+flask_session_cache/
+report_*.txt
