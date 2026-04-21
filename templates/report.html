@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Есеп — Power BI AI</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f5f7fa; color: #1a1a2e; }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 24px 40px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .header h1 { color: white; font-size: 22px; }
+        .header-meta { color: rgba(255,255,255,0.8); font-size: 13px; margin-top: 4px; }
+        .header-actions { display: flex; gap: 12px; }
+        .btn {
+            padding: 8px 18px;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+            border: none;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .btn-white { background: white; color: #667eea; }
+        .btn-outline { background: transparent; color: white; border: 2px solid white; }
+        .container { max-width: 960px; margin: 40px auto; padding: 0 20px 60px; }
+
+        .screenshot-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+        .screenshot-card h3 { font-size: 13px; color: #999; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px; }
+        .screenshot-card img {
+            width: 100%;
+            border-radius: 8px;
+            border: 1px solid #eee;
+        }
+
+        .report-card {
+            background: white;
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            line-height: 1.85;
+        }
+        .report-card h2 {
+            font-size: 18px;
+            color: #667eea;
+            margin: 28px 0 12px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        .report-card h2:first-child { margin-top: 0; }
+        .report-card p { color: #444; margin-bottom: 10px; }
+        .report-card ul { padding-left: 20px; color: #444; }
+        .report-card li { margin-bottom: 6px; }
+        .report-card strong { color: #1a1a2e; }
+
+        .meta-bar {
+            background: white;
+            border-radius: 12px;
+            padding: 16px 24px;
+            margin-bottom: 24px;
+            display: flex;
+            gap: 32px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            flex-wrap: wrap;
+        }
+        .meta-item label { font-size: 11px; color: #999; text-transform: uppercase; letter-spacing: 0.5px; }
+        .meta-item span { display: block; font-weight: 600; color: #333; margin-top: 2px; }
+
+        @media print {
+            .header-actions, .btn { display: none; }
+            body { background: white; }
+            .report-card, .screenshot-card { box-shadow: none; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div>
+            <h1>📊 Аналитикалық есеп</h1>
+            <div class="header-meta">Жасалды: {{ generated_at }}</div>
+        </div>
+        <div class="header-actions">
+            <button class="btn btn-white" onclick="window.print()">🖨️ PDF / Басып шығару</button>
+            <a href="/"><button class="btn btn-outline">← Жаңа есеп</button></a>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="meta-bar">
+            <div class="meta-item">
+                <label>Источник</label>
+                <span>{{ source }}</span>
+            </div>
+            <div class="meta-item">
+                <label>Дата отчёта</label>
+                <span>{{ generated_at }}</span>
+            </div>
+            <div class="meta-item">
+                <label>AI модель</label>
+                <span>GPT-4o mini</span>
+            </div>
+        </div>
+
+        {% if screenshot %}
+        <div class="screenshot-card">
+            <h3>Power BI отчёт (скриншот)</h3>
+            <img src="data:image/png;base64,{{ screenshot }}" alt="Power BI screenshot">
+        </div>
+        {% endif %}
+
+        <div class="report-card">
+            {{ report | safe }}
+        </div>
+    </div>
+</body>
+</html>

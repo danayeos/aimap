@@ -1,0 +1,10 @@
+msal
+requests
+flask
+flask-session
+openai
+pandas
+openpyxl
+python-dotenv
+markdown
+playwright

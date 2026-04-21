@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Power BI AI Отчёт</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+        }
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 48px;
+            width: 100%;
+            max-width: 560px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+        }
+        .logo { font-size: 44px; text-align: center; margin-bottom: 8px; }
+        h1 { text-align: center; color: #1a1a2e; font-size: 24px; margin-bottom: 6px; }
+        .subtitle { text-align: center; color: #666; font-size: 14px; margin-bottom: 32px; }
+
+        .error {
+            background: #fff0f0;
+            border: 1px solid #ffcccc;
+            color: #cc0000;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            border-radius: 10px;
+            background: #f0f0f5;
+            padding: 4px;
+            margin-bottom: 28px;
+            gap: 4px;
+        }
+        .tab {
+            flex: 1;
+            padding: 10px;
+            text-align: center;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            color: #888;
+            transition: all 0.2s;
+            user-select: none;
+        }
+        .tab.active {
+            background: white;
+            color: #667eea;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .panel { display: none; }
+        .panel.active { display: block; }
+
+        label { display: block; font-weight: 600; color: #333; margin-bottom: 6px; font-size: 14px; }
+        input[type="url"], input[type="file"] {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 13px;
+            margin-bottom: 8px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        input[type="url"]:focus { border-color: #667eea; }
+
+        .file-drop {
+            border: 2px dashed #d0d0e0;
+            border-radius: 10px;
+            padding: 32px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: 8px;
+            background: #fafafa;
+        }
+        .file-drop:hover, .file-drop.dragover {
+            border-color: #667eea;
+            background: #f0f2ff;
+        }
+        .file-drop .icon { font-size: 36px; margin-bottom: 8px; }
+        .file-drop p { color: #555; font-size: 14px; }
+        .file-drop small { color: #aaa; font-size: 12px; }
+        .file-drop input { display: none; }
+        .file-name {
+            font-size: 13px;
+            color: #667eea;
+            font-weight: 600;
+            margin-top: 8px;
+            display: none;
+        }
+
+        .hint { font-size: 12px; color: #999; margin-bottom: 20px; }
+
+        button[type="submit"] {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s;
+            margin-top: 4px;
+        }
+        button[type="submit"]:hover { opacity: 0.9; }
+
+        /* Loading */
+        #loading {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(102, 126, 234, 0.93);
+            z-index: 999;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            gap: 20px;
+        }
+        #loading.show { display: flex; }
+        .spinner {
+            width: 52px; height: 52px;
+            border: 5px solid rgba(255,255,255,0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        #loading p { font-size: 18px; font-weight: 600; }
+        #loading small { font-size: 13px; opacity: 0.8; }
+    </style>
+</head>
+<body>
+
+<div id="loading">
+    <div class="spinner"></div>
+    <p>Отчёт генерируется...</p>
+    <small>AI анализирует данные — подождите 15–30 секунд</small>
+</div>
+
+<div class="card">
+    <div class="logo">📊</div>
+    <h1>Power BI AI Отчёт</h1>
+    <p class="subtitle">Автоматический анализ данных через AI</p>
+
+    {% if error %}
+    <div class="error">⚠️ {{ error }}</div>
+    {% endif %}
+
+    <div class="tabs">
+        <div class="tab active" onclick="switchTab('url')">🔗 Публичная ссылка</div>
+        <div class="tab" onclick="switchTab('file')">📁 Excel / CSV файл</div>
+    </div>
+
+    <!-- Панель 1: ссылка -->
+    <div id="panel-url" class="panel active">
+        <form action="/analyze" method="POST" onsubmit="showLoading()">
+            <label>Ссылка на публичный отчёт Power BI</label>
+            <input
+                type="url"
+                name="powerbi_url"
+                placeholder="https://app.powerbi.com/view?r=..."
+            >
+            <p class="hint">Вставьте публичную embed-ссылку из Power BI</p>
+            <button type="submit">🤖 Сгенерировать отчёт</button>
+        </form>
+    </div>
+
+    <!-- Панель 2: файл -->
+    <div id="panel-file" class="panel">
+        <form action="/analyze-file" method="POST" enctype="multipart/form-data" onsubmit="showLoading()">
+            <label>Загрузите файл с данными</label>
+            <div class="file-drop" onclick="document.getElementById('fileInput').click()"
+                 ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)">
+                <div class="icon">📂</div>
+                <p>Нажмите или перетащите файл сюда</p>
+                <small>Поддерживается: .xlsx, .xls, .csv</small>
+                <input type="file" id="fileInput" name="datafile" accept=".xlsx,.xls,.csv" onchange="showFileName(this)">
+            </div>
+            <div class="file-name" id="fileName"></div>
+            <p class="hint" style="margin-top:10px">Экспортируйте данные из Power BI: визуализация → "..." → Экспорт данных</p>
+            <button type="submit">🤖 Сгенерировать отчёт</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    function switchTab(tab) {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+        event.target.classList.add('active');
+        document.getElementById('panel-' + tab).classList.add('active');
+    }
+
+    function showLoading() {
+        document.getElementById('loading').classList.add('show');
+    }
+
+    function showFileName(input) {
+        const el = document.getElementById('fileName');
+        if (input.files.length > 0) {
+            el.textContent = '✅ ' + input.files[0].name;
+            el.style.display = 'block';
+        }
+    }
+
+    function handleDragOver(e) {
+        e.preventDefault();
+        e.currentTarget.classList.add('dragover');
+    }
+    function handleDragLeave(e) {
+        e.currentTarget.classList.remove('dragover');
+    }
+    function handleDrop(e) {
+        e.preventDefault();
+        e.currentTarget.classList.remove('dragover');
+        const file = e.dataTransfer.files[0];
+        if (file) {
+            document.getElementById('fileInput').files = e.dataTransfer.files;
+            showFileName(document.getElementById('fileInput'));
+        }
+    }
+</script>
+</body>
+</html>
