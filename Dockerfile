@@ -8,6 +8,7 @@ RUN playwright install chromium
 
 COPY . .
 
-EXPOSE 8000
+ENV PORT=7860
+EXPOSE 7860
 
 CMD ["python", "app.py"]
