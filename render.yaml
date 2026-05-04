@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: power-ai
+    runtime: docker
+    plan: starter
+    healthCheckPath: /
+    envVars:
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: FLASK_SECRET_KEY
+        generateValue: true
